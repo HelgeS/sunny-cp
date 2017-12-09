@@ -60,3 +60,37 @@ predicate bool_sum_ge(array[int] of var bool: x, var int: c); %=
 %    bool_lin_ge([1 | i in index_set(x)],x,c);
 predicate bool_sum_gt(array[int] of var bool: x, var int: c); %=
 %    bool_lin_gt([1 | i in index_set(x)],x,c);
+
+predicate array_bool_xor(array[int] of var bool: bs) =
+    let { int: bs_lower = min(index_set(bs)),
+          int: bs_upper = max(index_set(bs)),
+          int: n = length(bs)
+    } in
+        if n == 1 then bs[bs_lower] else
+        if n == 2 then bs[bs_lower] xor bs[bs_upper] else
+        if n == 3 then bs[bs_lower] = (bs[bs_lower + 1] = bs[bs_upper])
+        else
+            let { int: cs_lower = bs_lower + 1,
+                  int: cs_upper = bs_upper - 1,
+                  array [cs_lower..cs_upper] of var bool: cs
+            } in
+                forall(i in cs_lower..cs_upper-1)(
+                    cs[i+1] = bs[i+1] xor cs[i]
+                )
+                /\ (cs[cs_lower] = bs[bs_lower] xor bs[bs_lower + 1])
+                /\ (bs[bs_upper] xor cs[cs_upper])
+        endif endif endif;
+
+predicate int_mod(var int: x, var int: y, var int: z) =
+  x=(x div y)*y+z;
+
+%------------------------------------------------------------------------------%
+% Following variable selection annotations are just place holders until they are
+% included in the MiniZinc distributions.
+
+/** @group annotations.search.varsel Choose the variable with the smallest largest value in its domain */
+annotation smallest_largest;
+
+/** @group annotations.search.varsel Choose the variable with the largest smallest value in its domain */
+annotation largest_smallest;
+
